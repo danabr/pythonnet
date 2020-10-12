@@ -156,7 +156,9 @@ namespace Python.Runtime
             Marshal.WriteIntPtr(type, TypeOffset.tp_dictoffset, (IntPtr)tp_dictoffset);
 
             // add a __len__ slot for inheritors of ICollection and ICollection<>
-            if (typeof(ICollection).IsAssignableFrom(clrType) || clrType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>)))
+            if (typeof(ICollection).IsAssignableFrom(clrType) ||
+                clrType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>)) ||
+                clrType.IsInterface && clrType.IsGenericType && clrType.GetGenericTypeDefinition() == typeof(ICollection<>))
             {
                 InitializeSlot(type, TypeOffset.mp_length, typeof(mp_length_slot).GetMethod(nameof(mp_length_slot.mp_length)));
             }
