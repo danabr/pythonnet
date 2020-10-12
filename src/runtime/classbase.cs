@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace Python.Runtime
@@ -188,7 +189,6 @@ namespace Python.Runtime
 
             var e = co.inst as IEnumerable;
             IEnumerator o;
-
             if (e != null)
             {
                 o = e.GetEnumerator();
@@ -203,7 +203,22 @@ namespace Python.Runtime
                 }
             }
 
-            return new Iterator(o).pyHandle;
+            var elemType = typeof(object);
+            var iterType = co.inst.GetType();
+            foreach(var ifc in iterType.GetInterfaces())
+            {
+                if (ifc.IsGenericType)
+                {
+                    var genTypeDef = ifc.GetGenericTypeDefinition();
+                    if (genTypeDef == typeof(IEnumerable<>) || genTypeDef == typeof(IEnumerator<>))
+                    {
+                        elemType = ifc.GetGenericArguments()[0];
+                        break;
+                    }
+                }
+            }
+
+            return new Iterator(o, elemType).pyHandle;
         }
 
 
